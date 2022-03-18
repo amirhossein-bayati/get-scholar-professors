@@ -1,0 +1,17 @@
+beautifulsoup4==4.10.0
+certifi==2021.10.8
+charset-normalizer==2.0.12
+dropbox==11.28.0
+idna==3.3
+ply==3.11
+psycopg2==2.9.3
+pyaes==1.6.1
+pyasn1==0.4.8
+PyYAML==6.0
+requests==2.27.1
+rsa==4.8
+six==1.16.0
+soupsieve==2.3.1
+stone==3.3.1
+Telethon==1.24.0
+urllib3==1.26.8

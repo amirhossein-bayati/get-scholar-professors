@@ -1,0 +1,227 @@
+from bs4 import BeautifulSoup
+import requests, re, json, time, random, datetime
+from get_scholar_headers import get_headers
+
+
+def kalb_req(url, ly):
+    cstart = 0
+    finished = 0
+    publication_count = 0
+    date_of_the_last_publication = int(ly)
+    uncited_count = 0
+    us_patent = 0
+    try:
+        while finished != 1:
+            # time.sleep(20)
+            url = f'{url}&cstart={cstart}&pagesize=100'
+            req = requests.get(url)
+            print(req)
+
+            index = req.text
+            soup = BeautifulSoup(index, 'html.parser')
+            main_div = soup.find('div', id='gs_top').find('div', id='gsc_bdy')
+            publications = main_div.find('table', id='gsc_a_t').find('tbody')
+            articles = publications.find_all('tr')
+
+            for article in articles:
+                if 'There are no articles in this profile.' == article.text:
+                    print("DOne")
+                    return [publication_count, uncited_count, date_of_the_last_publication, us_patent]
+
+                publication_count += 1
+                patent_text = article.find_all('td')[0].find_all(class_='gs_gray')
+                for pat in patent_text:
+                    txt = pat.text.lower()
+                    if 'us patent' in txt:
+                        us_patent += 1
+
+                cited = article.find_all('td')[1].text
+                year = article.find_all('td')[2].text
+
+                if year:
+                    year = int(year)
+                    date_of_the_last_publication = min(date_of_the_last_publication, year)
+
+                if not cited:
+                    uncited_count += 1
+
+            cstart += 100
+    except Exception as e:
+        print("!!!!!!!!!!!!!!!!!!!!!!")
+        print(e)
+        return [None, None, None, None]
+
+
+def get_last_publication(url):
+    url = url + '&sortby=pubdate'
+    req = requests.get(url)
+    print(req)
+    index = req.text
+    soup = BeautifulSoup(index, 'html.parser')
+    main_div = soup.find('div', id='gs_top').find('div', id='gsc_bdy')
+    publications = main_div.find('table', id='gsc_a_t').find('tbody')
+    date_of_the_last_publication = publications.find('tr').find_all('td')[2].text
+    # print(date_of_the_last_publication)
+
+    return date_of_the_last_publication
+
+
+
+try:
+    with open('professors_infos.json', 'r') as file:
+        results = json.load(file)
+except:
+    results = []
+
+try:
+    with open('errors.json', 'r') as file:
+        error_links = json.load(file)
+except:
+    error_links = []
+
+
+def main():
+    with open('professors_urls.json', 'r') as file:
+        data = json.load(file)
+
+    for item in data[501:]:
+        index_of_prof = data.index(item)
+        print(index_of_prof)
+        if index_of_prof % 50 == 0:
+            msg = f'index: {index_of_prof}'
+            print(msg)
+            time.sleep(300)
+
+        url = item['url']
+        country = item['country']
+        qs_uni_world_ranking = item['global score']
+        qs_uni_country_ranking = item['local score']
+        uni = item['university']
+        positin_in_top_100_pages = item['positin in top 100 pages']
+        university_url = item['university_url']
+
+        # url = f"https://scholar.google.com/citations?hl=en&user=5HX--AYAAAAJ"
+        try:
+            req = requests.get(url)
+            print(url)
+            print(req)
+            if req.status_code != 200:
+                print('req error')
+                msg = f'index: {index_of_prof}'
+                print(msg)
+                time.sleep(60)
+                continue
+
+            index = req.text
+            soup = BeautifulSoup(index, 'html.parser')
+            main_div = soup.find('div', id='gs_top').find('div', id='gsc_bdy')
+            author_info = main_div.find('div', id='gsc_prf_w', class_='gsc_lcl').find(id='gsc_prf')
+
+            date = datetime.datetime.now().date().strftime('%d/%m/%Y')  ###################################
+            author_name = author_info.find(id='gsc_prf_i').find(
+                id='gsc_prf_in').text  #######################################
+
+            author_bio = author_info.find(id='gsc_prf_i').find('a', class_='gsc_prf_ila')
+
+            try:
+                university = author_bio.text  ########################
+            except:
+                university = uni
+
+            try:
+                google_scholar_link_of_the_university = 'https://scholar.google.com.au/' + author_bio.get(
+                    'href')  ########################
+            except:
+                google_scholar_link_of_the_university = university_url
+
+            google_scholar_link_of_the_author = url  ###############################
+
+            projects_bar = main_div.find('div', class_='gsc_rsb')
+
+            articles = projects_bar.find('table', id='gsc_rsb_st').find('tbody')
+
+            citation = articles.find_all('tr')[0].find('td', class_='gsc_rsb_std').text  ########################
+            h_index = articles.find_all('tr')[1].find('td', class_='gsc_rsb_std').text  ###########################
+            i10_index = articles.find_all('tr')[2].find('td', class_='gsc_rsb_std').text  #########################
+
+            ##############################################
+
+            publications = main_div.find('table', id='gsc_a_t').find('tbody')
+
+            the_most_citation = publications.find('tr').find_all('td')[1]  #################################
+            the_most_citation = int([text for text in the_most_citation.stripped_strings][0])
+
+            # sum_of_to_10_citations = sum([int(i.find_all('td')[1].text) for i in publications.find_all('tr')[:10]]) ###################
+            x = [i.find_all('td')[1] for i in publications.find_all('tr')[:10]]
+            # print(x)
+            sum_of_to_10_citations = 0
+            for i in x:
+                t = int([text for text in i.stripped_strings][0])
+                sum_of_to_10_citations += t
+
+            sum_of_to_10_citations_density = sum_of_to_10_citations / 12
+            date_of_the_last_publication = get_last_publication(url)  ################################
+
+            ###############################################
+
+            num_of_publications, num_of_publications_without_citation, date_of_the_first_publication, us_patent = kalb_req(
+                url, date_of_the_last_publication)
+            uncited_rate = num_of_publications_without_citation / num_of_publications
+            observation_time_window = int(date_of_the_last_publication) - int(date_of_the_first_publication)
+            average_citation_per_publication = int(citation) / int(num_of_publications)
+            average_citation_per_year = int(citation) / int(observation_time_window)
+            average_publication_per_year = int(num_of_publications) / int(observation_time_window)
+            the_most_citation_density = int(the_most_citation) / int(citation)
+            us_patent = int(us_patent)
+            patents_and_Publications_balance = us_patent / num_of_publications
+            res = {}
+            # (date, author_name, university, country, google_scholar_link_of_the_university, google_scholar_link_of_the_author, qs_uni_world_ranking, qs_uni_country_ranking, citation, h_index, i10_index, num_of_publications, num_of_publications_without_citation, uncited_rate, us_patent, patents_and_Publications_balance, the_most_citation, the_most_citation_density, sum_of_to_10_citations, sum_of_to_10_citations_density, date_of_the_first_publication, date_of_the_last_publication, observation_time_window, average_citation_per_publication, average_citation_per_year, average_publication_per_year, positin_in_top_100_pages)
+            res['Date'] = date
+            res['Author name'] = author_name
+            res['University'] = university
+            res['country'] = country
+            res['Google Scholar link of the university'] = google_scholar_link_of_the_university
+            res['Google Scholar link of the author'] = google_scholar_link_of_the_author
+            res['Qs uni world ranking'] = qs_uni_world_ranking
+            res['Qs uni country ranking'] = qs_uni_country_ranking
+            res['Citation'] = citation
+            res['h-index'] = h_index
+            res['i10-index'] = i10_index
+            res['No. Of Publications'] = num_of_publications
+            res['No. Of publications without citation'] = num_of_publications_without_citation
+            res['Uncited rate'] = uncited_rate
+            res['No.Of US pattent'] = us_patent
+            res['Patents and Publications balance'] = patents_and_Publications_balance
+            res['The most citation'] = the_most_citation
+            res['The most citation density'] = the_most_citation_density
+            res['Sum of top 10 citations'] = sum_of_to_10_citations
+            res['Sum of top 10 citations density'] = sum_of_to_10_citations_density
+            res['Date of the first publication (year)'] = date_of_the_first_publication
+            res['Date of the last publication (year)'] = date_of_the_last_publication
+            res['Observation time window (years)'] = observation_time_window
+            res['average citation per publication'] = average_citation_per_publication
+            res['average citation per year'] = average_citation_per_year
+            res['average publication per year'] = average_publication_per_year
+            res['Author\'s positin in top 100 pages'] = positin_in_top_100_pages
+
+            print(res)
+            results.append(res)
+            with open('professors_infos.json', 'w') as file:
+                json.dump(results, file)
+                print("saved...")
+
+        except Exception as e:
+            print(e)
+            error_links.append(url)
+            with open('errors.json', 'w') as file:
+                json.dump(error_links, file)
+                print("saved...")
+        print('================================\n')
+        time.sleep(100)
+
+
+if __name__ == '__main__':
+    s_time = time.time()
+    main()
+    e_time = time.time()
+    print('Time:', e_time - s_time)
