@@ -84,13 +84,13 @@ def main():
     with open('professors_urls.json', 'r') as file:
         data = json.load(file)
 
-    for item in data[501:]:
+    for item in data[1700:2300]:
         index_of_prof = data.index(item)
         print(index_of_prof)
         if index_of_prof % 50 == 0:
             msg = f'index: {index_of_prof}'
             print(msg)
-            time.sleep(300)
+            time.sleep(0)
 
         url = item['url']
         country = item['country']
@@ -109,7 +109,7 @@ def main():
                 print('req error')
                 msg = f'index: {index_of_prof}'
                 print(msg)
-                time.sleep(60)
+                time.sleep(0)
                 continue
 
             index = req.text
@@ -145,7 +145,6 @@ def main():
             i10_index = articles.find_all('tr')[2].find('td', class_='gsc_rsb_std').text  #########################
 
             ##############################################
-
             publications = main_div.find('table', id='gsc_a_t').find('tbody')
 
             the_most_citation = publications.find('tr').find_all('td')[1]  #################################
@@ -156,24 +155,33 @@ def main():
             # print(x)
             sum_of_to_10_citations = 0
             for i in x:
-                t = int([text for text in i.stripped_strings][0])
-                sum_of_to_10_citations += t
-
+                res = len([text for text in i.stripped_strings])
+                if res != 0:
+                    t = int([text for text in i.stripped_strings][0])
+                    sum_of_to_10_citations += t
             sum_of_to_10_citations_density = sum_of_to_10_citations / 12
             date_of_the_last_publication = get_last_publication(url)  ################################
-
             ###############################################
 
             num_of_publications, num_of_publications_without_citation, date_of_the_first_publication, us_patent = kalb_req(
                 url, date_of_the_last_publication)
             uncited_rate = num_of_publications_without_citation / num_of_publications
+
             observation_time_window = int(date_of_the_last_publication) - int(date_of_the_first_publication)
             average_citation_per_publication = int(citation) / int(num_of_publications)
+
+            if int(observation_time_window) == 0:
+                observation_time_window = int(observation_time_window) + 1
+
             average_citation_per_year = int(citation) / int(observation_time_window)
+
             average_publication_per_year = int(num_of_publications) / int(observation_time_window)
+
             the_most_citation_density = int(the_most_citation) / int(citation)
+
             us_patent = int(us_patent)
             patents_and_Publications_balance = us_patent / num_of_publications
+
             res = {}
             # (date, author_name, university, country, google_scholar_link_of_the_university, google_scholar_link_of_the_author, qs_uni_world_ranking, qs_uni_country_ranking, citation, h_index, i10_index, num_of_publications, num_of_publications_without_citation, uncited_rate, us_patent, patents_and_Publications_balance, the_most_citation, the_most_citation_density, sum_of_to_10_citations, sum_of_to_10_citations_density, date_of_the_first_publication, date_of_the_last_publication, observation_time_window, average_citation_per_publication, average_citation_per_year, average_publication_per_year, positin_in_top_100_pages)
             res['Date'] = date
@@ -217,7 +225,7 @@ def main():
                 json.dump(error_links, file)
                 print("saved...")
         print('================================\n')
-        time.sleep(100)
+        time.sleep(0)
 
 
 if __name__ == '__main__':
