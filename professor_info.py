@@ -3,7 +3,7 @@ import requests, re, json, time, random, datetime
 from get_scholar_headers import get_headers
 
 
-def kalb_req(url, ly):
+def update_articles(url, ly):
     cstart = 0
     finished = 0
     publication_count = 0
@@ -163,7 +163,7 @@ def main():
             date_of_the_last_publication = get_last_publication(url)  ################################
             ###############################################
 
-            num_of_publications, num_of_publications_without_citation, date_of_the_first_publication, us_patent = kalb_req(
+            num_of_publications, num_of_publications_without_citation, date_of_the_first_publication, us_patent = update_articles(
                 url, date_of_the_last_publication)
             uncited_rate = num_of_publications_without_citation / num_of_publications
 
