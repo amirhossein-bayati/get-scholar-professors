@@ -205,6 +205,7 @@ def main():
 
             res = {}
             # (date, author_name, university, country, google_scholar_link_of_the_university, google_scholar_link_of_the_author, qs_uni_world_ranking, qs_uni_country_ranking, citation, h_index, i10_index, num_of_publications, num_of_publications_without_citation, uncited_rate, us_patent, patents_and_Publications_balance, the_most_citation, the_most_citation_density, sum_of_to_10_citations, sum_of_to_10_citations_density, date_of_the_first_publication, date_of_the_last_publication, observation_time_window, average_citation_per_publication, average_citation_per_year, average_publication_per_year, positin_in_top_100_pages)
+            res['Index'] = index_of_prof
             res['Date'] = date
             res['Author name'] = author_name
             res['University'] = university
