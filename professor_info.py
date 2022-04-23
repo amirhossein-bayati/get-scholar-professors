@@ -3,13 +3,29 @@ import requests, re, json, time, random, datetime
 from get_scholar_headers import get_headers
 
 
+
+def get_date_of_first_and_last_publications(years):
+    years.sort(reverse=True)
+    last = years[0]
+    first = years[-1]
+    differrence = last - first
+    i = 1
+    while differrence > 200:
+        i += 1
+        first = years[-i]
+        differrence = years[0] - first
+
+    return first, last
+
+
 def update_articles(url, ly):
     cstart = 0
     finished = 0
     publication_count = 0
-    date_of_the_last_publication = int(ly)
+    date_of_the_first_publication = int(ly)
     uncited_count = 0
     us_patent = 0
+    publication_years = []
     try:
         while finished != 1:
             # time.sleep(20)
@@ -25,8 +41,9 @@ def update_articles(url, ly):
 
             for article in articles:
                 if 'There are no articles in this profile.' == article.text:
+                    date_of_the_first_publication = get_date_of_first_and_last_publications(publication_years)[0]
                     print("DOne")
-                    return [publication_count, uncited_count, date_of_the_last_publication, us_patent]
+                    return [publication_count, uncited_count, date_of_the_first_publication, us_patent]
 
                 publication_count += 1
                 patent_text = article.find_all('td')[0].find_all(class_='gs_gray')
@@ -40,7 +57,8 @@ def update_articles(url, ly):
 
                 if year:
                     year = int(year)
-                    date_of_the_last_publication = min(date_of_the_last_publication, year)
+                    publication_years.append(year)
+                    # date_of_the_first_publication = min(date_of_the_first_publication, year)
 
                 if not cited:
                     uncited_count += 1
