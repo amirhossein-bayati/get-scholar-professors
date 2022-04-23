@@ -1,6 +1,12 @@
+import json
+import re
+import time
+
+import requests
 from bs4 import BeautifulSoup
-import requests, re, json, time, random
+
 from get_scholar_headers import get_headers
+
 
 def Find(string):
     # findall() has been used

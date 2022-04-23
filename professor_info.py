@@ -1,6 +1,9 @@
+import datetime
+import json
+import time
+
+import requests
 from bs4 import BeautifulSoup
-import requests, re, json, time, random, datetime
-from get_scholar_headers import get_headers
 
 
 
