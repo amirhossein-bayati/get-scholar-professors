@@ -118,7 +118,7 @@ def main():
         positin_in_top_100_pages = item['positin in top 100 pages']
         university_url = item['university_url']
 
-        # url = f"https://scholar.google.com/citations?hl=en&user=5HX--AYAAAAJ"
+        # url = f"https://scholar.google.com/citations?hl=en&user=BLpmIsUAAAAJ"
         try:
             req = requests.get(url)
             print(url)
@@ -146,11 +146,14 @@ def main():
             except:
                 university = uni
 
-            try:
-                google_scholar_link_of_the_university = 'https://scholar.google.com.au/' + author_bio.get(
-                    'href')  ########################
-            except:
-                google_scholar_link_of_the_university = university_url
+
+            google_scholar_link_of_the_university = university_url
+
+            # try:
+            #     google_scholar_link_of_the_university = 'https://scholar.google.com.au/' + author_bio.get(
+            #         'href')  ########################
+            # except:
+            #     google_scholar_link_of_the_university = university_url
 
             google_scholar_link_of_the_author = url  ###############################
 
@@ -178,7 +181,7 @@ def main():
                     t = int([text for text in i.stripped_strings][0])
                     sum_of_to_10_citations += t
             sum_of_to_10_citations_density = sum_of_to_10_citations / 12
-            date_of_the_last_publication = get_last_publication(url)  ################################
+            date_of_the_last_publication = get_last_publication(url)
             ###############################################
 
             num_of_publications, num_of_publications_without_citation, date_of_the_first_publication, us_patent = update_articles(
@@ -231,6 +234,7 @@ def main():
             res['Author\'s positin in top 100 pages'] = positin_in_top_100_pages
 
             print(res)
+            # quit(1)
             results.append(res)
             with open('professors_infos.json', 'w') as file:
                 json.dump(results, file)
