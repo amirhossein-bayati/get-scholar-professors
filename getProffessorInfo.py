@@ -3,13 +3,19 @@ import json
 import time
 
 import requests
-
 from bs4 import BeautifulSoup
 
 
 def get_date_of_first_and_last_publications(years):
     years.sort(reverse=True)
+    now = datetime.datetime.now().year
+
     last = years[0]
+    j = 0
+    while last > now:
+        j+=1
+        last = years[j]
+
     first = years[-1]
     differrence = last - first
     i = 1
@@ -44,14 +50,15 @@ def update_articles(url, ly):
 
             for article in articles:
                 if "There are no articles in this profile." == article.text:
-                    date_of_the_first_publication = get_date_of_first_and_last_publications(
+                    date_of_the_first_publication, date_of_the_last_publication = get_date_of_first_and_last_publications(
                         publication_years
-                    )[0]
+                    )
                     print("DOne")
                     return [
                         publication_count,
                         uncited_count,
                         date_of_the_first_publication,
+                        date_of_the_last_publication,
                         us_patent,
                     ]
 
@@ -108,7 +115,7 @@ def main():
     with open("Json/professors_urls.json", "r") as file:
         data = json.load(file)
 
-    for item in data[0:2600]:
+    for item in data[1700:2300]:
         index_of_prof = data.index(item)
         print(index_of_prof)
         if index_of_prof % 50 == 0:
@@ -125,6 +132,7 @@ def main():
         university_url = item["university_url"]
 
         try:
+            # url = 'https://scholar.google.com/citations?hl=en&user=msV80lcAAAAJ'
             req = requests.get(url)
             print(url)
             print(req)
@@ -195,6 +203,7 @@ def main():
                 num_of_publications,
                 num_of_publications_without_citation,
                 date_of_the_first_publication,
+                date_of_the_last_publication,
                 us_patent,
             ) = update_articles(url, date_of_the_last_publication)
             uncited_rate = num_of_publications_without_citation / num_of_publications
@@ -247,6 +256,8 @@ def main():
             res["Author's positin in top 100 pages"] = positin_in_top_100_pages
 
             print(res)
+
+            # quit(1)
             results.append(res)
             with open("Json/professors_infos.json", "w") as file:
                 json.dump(results, file)
