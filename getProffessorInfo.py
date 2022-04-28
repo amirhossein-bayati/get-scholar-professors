@@ -3,6 +3,7 @@ import json
 import time
 
 import requests
+
 from bs4 import BeautifulSoup
 
 
@@ -107,7 +108,7 @@ def main():
     with open("Json/professors_urls.json", "r") as file:
         data = json.load(file)
 
-    for item in data[1700:2300]:
+    for item in data[0:2600]:
         index_of_prof = data.index(item)
         print(index_of_prof)
         if index_of_prof % 50 == 0:

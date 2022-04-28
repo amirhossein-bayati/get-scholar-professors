@@ -3,6 +3,7 @@ import re
 import time
 
 import requests
+
 from bs4 import BeautifulSoup
 
 from getScholarHeaders import get_headers
@@ -36,15 +37,15 @@ def main():
     req_counter = 0
     headers = get_headers()
 
-    with open("Json/university_urls.json", "r") as file:
+    with open("Json/universities_full_data.json", "r") as file:
         data = json.load(file)
 
     for item in data:
-        domain = item["url"]
+        domain = item["url__1"]
         country = item["country"]
-        global_score = item["global score"]
-        local_score = item["local score"]
-        university = item["university"]
+        global_score = item["global score__1"]
+        local_score = item["local score__1"]
+        university = item["university__1"]
 
         if not domain:
             continue
@@ -105,9 +106,9 @@ def main():
             next_key = footer.get("onclick")
 
             before_author = next_key.split("\\")[-3][3:]
-        time.sleep(100)
+        time.sleep(1)
 
-    with open("Json/professors_urls.json", "w") as file:
+    with open("Json/professors_urls1.json", "w") as file:
         json.dump(results, file)
     print("\n\n\nDONE")
 
