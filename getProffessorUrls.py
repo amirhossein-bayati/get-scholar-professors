@@ -3,6 +3,7 @@ import re
 import time
 
 import requests
+
 from bs4 import BeautifulSoup
 
 from getScholarHeaders import get_headers
@@ -36,7 +37,7 @@ def main():
     req_counter = 0
     headers = get_headers()
 
-    with open("Json/university_urls.json", "r") as file:
+    with open("Json/universities_full_data.json", "r") as file:
         data = json.load(file)
 
     for item in data:
