@@ -31,92 +31,122 @@ def get_title(domain):
     return uni_title
 
 
+def make_request_to_google(headers, domain, before_author):
+    url = f"{domain}&after_author={before_author}"
+    req = requests.get(url, headers=headers)
+    print(req)
+
+    index = req.text
+    soup = BeautifulSoup(index, "html.parser")
+
+    main_div = soup.find(id="gs_bdy").find(id="gs_bdy_ccl", role="main").find(id="gsc_sa_ccl")
+    return main_div
+
+
+def get_next_page(main_div):
+    try:
+        footer = (
+            main_div.find("div", id="gsc_authors_bottom_pag", class_="gs_scl")
+            .find("div", class_="gsc_pgn")
+            .find("button", attrs={"aria-label": "Next"})
+        )
+    except:
+        pass
+    else:
+        footer = (
+            main_div.find("div", id="gsc_authors_bottom_pag", class_="gs_scl")
+            .find("div", class_="gsc_pgn")
+            .find("button", class_="gs_btnPR")
+        )
+
+    next_key = footer.get("onclick")
+
+    return next_key.split("\\")[-3][3:]
+
+
+def get_proffessors_url(
+    results, country, university, domain, global_score, local_score, prof_count, professors
+):
+    for prof in professors:
+        prof_count += 1
+        url = prof.find("a", class_="gs_ai_pho").get("href")
+        url = "https://scholar.google.com/" + url
+
+        res = {
+            "url": url,
+            "university_url": domain,
+            "country": country,
+            "university": university,
+            "global score": global_score,
+            "local score": local_score,
+            "positin in top 100 pages": prof_count,
+        }
+        results.append(res)
+        print(f"{prof_count}: {url}")
+    return results, prof_count
+
+
+def save_json(results):
+    with open("Json/professors_urls.json", "w") as file:
+        json.dump(results, file)
+    print("\n\n\nDONE")
+
+
+def read_json():
+    with open("Json/universities_full_data.json", "r") as file:
+        data = json.load(file)
+    return data
+
+
 def main():
 
     results = []
     req_counter = 0
     headers = get_headers()
 
-    with open("Json/universities_full_data.json", "r") as file:
-        data = json.load(file)
+    data = read_json()
 
-    for item in data:
-        domain = item["url__1"]
-        country = item["country"]
-        global_score = item["global score__1"]
-        local_score = item["local score__1"]
-        university = item["university__1"]
+    for country in data:
+        country_name = country["country"]
+        for university in country["universities"]:
+            domain = university["url"]
+            global_score = university["global_score"]
+            local_score = university["local_score"]
+            university = university["university"]
 
-        if not domain:
-            continue
+            if not domain:
+                continue
 
-        print("========================")
-        print(domain)
-        before_author = ""
-        prof_count = 0
+            print("========================")
+            print(domain)
+            before_author = ""
+            prof_count = 0
 
-        while prof_count < 100:
-            url = f"{domain}&after_author={before_author}"
-            req = requests.get(url, headers=headers)
-            req_counter += 1
-            print(req)
-            print(req_counter)
-
-            index = req.text
-            soup = BeautifulSoup(index, "html.parser")
-
-            main_div = (
-                soup.find(id="gs_bdy").find(id="gs_bdy_ccl", role="main").find(id="gsc_sa_ccl")
-            )
-
-            professors = main_div.find_all(class_="gsc_1usr")
-            for prof in professors:
-                prof_count += 1
-                url = prof.find("a", class_="gs_ai_pho").get("href")
-                url = "https://scholar.google.com/" + url
-
-                res = {
-                    "url": url,
-                    "university_url": domain,
-                    "country": country,
-                    "university": university,
-                    "global score": global_score,
-                    "local score": local_score,
-                    "positin in top 100 pages": prof_count,
-                }
-                results.append(res)
-
-                print(f"{prof_count}: {url}")
-
-            try:
-                footer = (
-                    main_div.find("div", id="gsc_authors_bottom_pag", class_="gs_scl")
-                    .find("div", class_="gsc_pgn")
-                    .find("button", attrs={"aria-label": "Next"})
-                )
-            except Exception as e:
-                pass
-            else:
-                footer = (
-                    main_div.find("div", id="gsc_authors_bottom_pag", class_="gs_scl")
-                    .find("div", class_="gsc_pgn")
-                    .find("button", class_="gs_btnPR")
+            while prof_count < 100:
+                main_div = make_request_to_google(headers, domain, before_author)
+                req_counter += 1
+                print(req_counter)
+                professors = main_div.find_all(class_="gsc_1usr")
+                results, prof_count = get_proffessors_url(
+                    results,
+                    country_name,
+                    university,
+                    domain,
+                    global_score,
+                    local_score,
+                    prof_count,
+                    professors,
                 )
 
-            next_key = footer.get("onclick")
+                before_author = get_next_page(main_div)
 
-            before_author = next_key.split("\\")[-3][3:]
-        time.sleep(1)
-
-    with open("Json/professors_urls1.json", "w") as file:
-        json.dump(results, file)
-    print("\n\n\nDONE")
+    save_json(results)
 
 
 if __name__ == "__main__":
     """This module gets university urls from 'Json/university_urls.json' then
     extracts proffessors from that and save them in
-    'Json/professors_urls.json' file.
+    'Json/universities_full_data.json' file.
     """
     s_time = time.time()
     main()
