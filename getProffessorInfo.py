@@ -1,8 +1,10 @@
 import datetime
 import json
+import re
 import time
 
 import requests
+
 from bs4 import BeautifulSoup
 
 
@@ -110,12 +112,17 @@ try:
 except:
     error_links = []
 
+def validata_english_url(url):
+    seperator = '&user='
+    first, second = url.split(seperator)
+    path, lang = first.split('=')
+    return path + '=en' + seperator + second
 
 def main():
     with open("Json/professors_urls.json", "r") as file:
         data = json.load(file)
 
-    for item in data[1700:2300]:
+    for item in data:
         index_of_prof = data.index(item)
         print(index_of_prof)
         if index_of_prof % 50 == 0:
@@ -124,6 +131,7 @@ def main():
             time.sleep(0)
 
         url = item["url"]
+        url = validata_english_url(url)
         country = item["country"]
         qs_uni_world_ranking = item["global score"]
         qs_uni_country_ranking = item["local score"]

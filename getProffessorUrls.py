@@ -124,6 +124,8 @@ def main():
 
             while prof_count < 100:
                 main_div = make_request_to_google(headers, domain, before_author)
+                if not main_div:
+                    break
                 req_counter += 1
                 print(req_counter)
                 professors = main_div.find_all(class_="gsc_1usr")
