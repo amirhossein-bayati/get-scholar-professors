@@ -15,3 +15,4 @@ soupsieve==2.3.1
 stone==3.3.1
 Telethon==1.24.0
 urllib3==1.26.8
+humanize==4.0.0
