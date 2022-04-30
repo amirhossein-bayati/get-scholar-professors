@@ -144,6 +144,8 @@ def main():
                 )
 
                 before_author = get_next_page(main_div)
+                if before_author ==None:
+                    break
 
     save_json(results)
 
