@@ -3,7 +3,6 @@ import re
 import time
 
 import requests
-
 from bs4 import BeautifulSoup
 
 from getScholarHeaders import get_headers
@@ -125,7 +124,7 @@ def main():
             before_author = ""
             prof_count = 0
 
-            while prof_count < 100:
+            while prof_count < 100 and before_author != None:
                 main_div = make_request_to_google(headers, domain, before_author)
                 if not main_div:
                     break
@@ -142,11 +141,7 @@ def main():
                     prof_count,
                     professors,
                 )
-
                 before_author = get_next_page(main_div)
-                if before_author ==None:
-                    break
-
     save_json(results)
 
 
