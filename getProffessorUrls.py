@@ -5,6 +5,7 @@ import time
 
 import humanize
 import requests
+
 from bs4 import BeautifulSoup
 
 from getScholarHeaders import get_headers

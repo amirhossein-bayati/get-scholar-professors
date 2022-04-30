@@ -1,23 +1,23 @@
 import functools
 import json
 import time
+
 from datetime import datetime
 
 import humanize
 import requests
+
 from bs4 import BeautifulSoup
 
 
 def get_date_of_first_and_last_publications(years):
     years.sort(reverse=True)
     now = datetime.now().year
-
     last = years[0]
     j = 0
     while last > now:
         j += 1
         last = years[j]
-
     first = years[-1]
     differrence = last - first
     i = 1
@@ -25,7 +25,6 @@ def get_date_of_first_and_last_publications(years):
         i += 1
         first = years[-i]
         differrence = years[0] - first
-
     return first, last
 
 
@@ -48,6 +47,7 @@ def update_articles(url, ly):
                         date_of_the_last_publication,
                     ) = get_date_of_first_and_last_publications(publication_years)
                     print("Done")
+
                     return [
                         publication_count,
                         uncited_count,

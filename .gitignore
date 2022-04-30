@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+test.*
 .vscode
 test.*
 Json/universities_full_data.py
