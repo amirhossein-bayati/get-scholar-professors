@@ -1,7 +1,9 @@
+import functools
 import json
 import re
 import time
 
+import humanize
 import requests
 from bs4 import BeautifulSoup
 
@@ -99,15 +101,24 @@ def read_json():
         data = json.load(file)
     return data
 
+def timer(func):
+    @functools.wraps(func)
+    def wrapper_timer(*args, **kwargs):
+        tic = time.perf_counter()
+        value = func(*args, **kwargs)
+        toc = time.perf_counter()
+        elapsed_time = toc - tic
+        print(f"Elapsed time: {humanize.precisedelta(elapsed_time)}")
+        return value
 
+    return wrapper_timer
+
+@timer
 def main():
-
     results = []
     req_counter = 0
     headers = get_headers()
-
     data = read_json()
-
     for country in data:
         country_name = country["country"]
         for university in country["universities"]:
@@ -115,10 +126,8 @@ def main():
             global_score = university["global_score"]
             local_score = university["local_score"]
             university = university["university"]
-
             if not domain:
                 continue
-
             print("========================")
             print(domain)
             before_author = ""
@@ -150,7 +159,4 @@ if __name__ == "__main__":
     extracts proffessors from that and save them in
     'Json/universities_full_data.json' file.
     """
-    s_time = time.time()
     main()
-    e_time = time.time()
-    print("Time:", e_time - s_time)
