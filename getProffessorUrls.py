@@ -1,11 +1,5 @@
-import json
-import re
-import time
-
-import requests
-
+import json,re,time,requests
 from bs4 import BeautifulSoup
-
 from getScholarHeaders import get_headers
 
 
