@@ -61,7 +61,10 @@ def get_next_page(main_div):
 
     next_key = footer.get("onclick")
 
-    return next_key.split("\\")[-3][3:]
+    try:
+        return next_key.split("\\")[-3][3:]
+    except:
+        return None
 
 
 def get_proffessors_url(
