@@ -7,7 +7,7 @@ import humanize
 import requests
 
 from bs4 import BeautifulSoup
-from getScholarHeaders import get_headers
+from get_scholar_headers import get_headers
 
 
 def Find(string):
